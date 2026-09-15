@@ -1,0 +1,1636 @@
+/* ==========================================================================
+   VÓRTICE — dirección de arte
+   Negro y marfil como base, naranja eléctrico como acento.
+   Tipografía editorial de gran tamaño frente a etiquetas monoespaciadas.
+   ========================================================================== */
+
+:root {
+  /* Base */
+  --noir: #0a0a0b;
+  --noir-2: #101012;
+  --noir-3: #17171a;
+  --marfil: #f2ede4;
+  --marfil-70: rgba(242, 237, 228, 0.7);
+  --marfil-45: rgba(242, 237, 228, 0.45);
+  --marfil-22: rgba(242, 237, 228, 0.22);
+  --marfil-10: rgba(242, 237, 228, 0.1);
+
+  /* Acento: lo sobrescribe el acabado elegido */
+  --acento: #ff4d0a;
+  --acento-suave: #ff8c4d;
+
+  /* Tipografía */
+  --display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+  --sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Ritmo */
+  --margen: clamp(1.25rem, 5vw, 5.5rem);
+  --gutter: clamp(1rem, 2.4vw, 2.5rem);
+
+  /* Tiempos */
+  --micro: 220ms;
+  --medio: 620ms;
+  --lento: 1100ms;
+  --curva: cubic-bezier(0.22, 1, 0.36, 1);
+  --curva-fuerte: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Espacio reservado para el control flotante de movimiento */
+  --hueco-control: 0rem;
+
+  /* Progreso del documento, lo escribe la coreografía */
+  --avance: 0;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--noir);
+  color: var(--marfil);
+  font-family: var(--sans);
+  font-size: clamp(0.95rem, 0.9rem + 0.2vw, 1.05rem);
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* El puntero decorativo nunca sustituye al del sistema */
+::selection {
+  background: var(--acento);
+  color: var(--noir);
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Accesibilidad
+   -------------------------------------------------------------------------- */
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.saltar {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 300;
+  transform: translateY(-180%);
+  background: var(--marfil);
+  color: var(--noir);
+  padding: 0.7rem 1.1rem;
+  font: 500 0.8rem/1 var(--mono);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: transform var(--micro) var(--curva);
+}
+.saltar:focus-visible {
+  transform: translateY(0);
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Lienzo 3D persistente
+   -------------------------------------------------------------------------- */
+
+.lienzo {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Se aclara con el avance: el negro puro del arranque se abre al final */
+  background:
+    radial-gradient(120% 80% at 50% 8%, rgba(255, 255, 255, 0.045), transparent 62%),
+    radial-gradient(90% 60% at 50% 120%, rgba(255, 255, 255, 0.03), transparent 60%);
+}
+
+.lienzo canvas {
+  display: block;
+}
+
+/* Grano: rompe las bandas de los degradados y da textura de copia impresa */
+.grano {
+  position: fixed;
+  inset: -50%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  animation: grano-mover 7s steps(6) infinite;
+}
+
+@keyframes grano-mover {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -2%); }
+  80% { transform: translate(3%, 1%); }
+}
+
+/* Viñeta: mantiene la atención en el centro del encuadre */
+.vineta {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 95% at 50% 45%,
+    transparent 38%,
+    rgba(5, 5, 6, 0.55) 82%,
+    rgba(5, 5, 6, 0.88) 100%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Estructura
+   -------------------------------------------------------------------------- */
+
+.contenido {
+  position: relative;
+  z-index: 3;
+}
+
+.escena {
+  position: relative;
+  padding-inline: var(--margen);
+}
+
+.paso,
+.detalle,
+.sonido__fijo,
+.cierre__fijo {
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   Bloque fijo
+   El texto de cada escena se queda quieto a la altura de la pantalla mientras
+   la escena 3D se transforma a su alrededor. Es `position: sticky`, no `pin`:
+   el desplazamiento sigue siendo el del navegador.
+   -------------------------------------------------------------------------- */
+
+.fijo {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.fijo > * {
+  width: 100%;
+}
+
+.fijo--abajo {
+  align-items: flex-end;
+  padding-bottom: clamp(3rem, 9vh, 6rem);
+}
+
+@media (max-width: 900px) {
+  .fijo {
+    align-items: flex-end;
+    /* Deja libre la esquina del control flotante de movimiento. */
+    padding-bottom: calc(clamp(2rem, 6vh, 4rem) + var(--hueco-control));
+  }
+}
+
+.escena__interior {
+  max-width: 1560px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Rejilla asimétrica de 12 columnas */
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Velo de legibilidad
+   El producto sigue cruzando por detrás del texto, pero el texto se lee.
+   -------------------------------------------------------------------------- */
+
+.velo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Los bloques son más altos que el viewport, así que el borde del velo
+     puede quedar a la vista como un escalón. Se difumina en vertical para
+     que la transición entre escenas no tenga costuras. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 14%,
+    #000 86%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 14%,
+    #000 86%,
+    transparent 100%
+  );
+}
+
+.velo--izq {
+  background: linear-gradient(
+    100deg,
+    rgba(10, 10, 11, 0.97) 0%,
+    rgba(10, 10, 11, 0.9) 26%,
+    rgba(10, 10, 11, 0.55) 46%,
+    rgba(10, 10, 11, 0) 66%
+  );
+}
+
+.velo--der {
+  background: linear-gradient(
+    260deg,
+    rgba(10, 10, 11, 0.97) 0%,
+    rgba(10, 10, 11, 0.9) 26%,
+    rgba(10, 10, 11, 0.55) 46%,
+    rgba(10, 10, 11, 0) 66%
+  );
+}
+
+.velo--centro {
+  background: radial-gradient(
+    76% 52% at 50% 50%,
+    rgba(10, 10, 11, 0.9) 0%,
+    rgba(10, 10, 11, 0.72) 46%,
+    rgba(10, 10, 11, 0) 82%
+  );
+}
+
+.velo--abajo {
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 11, 0.96) 0%,
+    rgba(10, 10, 11, 0.8) 24%,
+    rgba(10, 10, 11, 0) 58%
+  );
+  /* Este velo ya se desvanece solo hacia arriba: la máscara general le
+     borraría precisamente la franja inferior, que es la que debe cubrir. */
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* En pantallas estrechas el producto queda detrás del texto en vertical,
+   así que el velo pasa a ser siempre de abajo arriba. */
+@media (max-width: 900px) {
+  .velo--izq,
+  .velo--der,
+  .velo--centro {
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 11, 0.96) 0%,
+      rgba(10, 10, 11, 0.88) 34%,
+      rgba(10, 10, 11, 0.6) 58%,
+      rgba(10, 10, 11, 0) 84%
+    );
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tipografía
+   -------------------------------------------------------------------------- */
+
+.etiqueta {
+  font-family: var(--mono);
+  font-size: clamp(0.63rem, 0.58rem + 0.2vw, 0.76rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--marfil-45);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62em;
+}
+
+.etiqueta::before {
+  content: '';
+  width: 1.9em;
+  height: 1px;
+  background: var(--acento);
+  flex: none;
+}
+
+.etiqueta--suelta::before {
+  display: none;
+}
+
+.titular {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2.7rem, 1.2rem + 8.6vw, 9.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.028em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.titular--medio {
+  font-size: clamp(2.1rem, 1.1rem + 5.2vw, 5.6rem);
+  line-height: 0.98;
+}
+
+.titular--pequeno {
+  font-size: clamp(1.7rem, 1rem + 3vw, 3.4rem);
+  line-height: 1.04;
+}
+
+.titular em {
+  font-style: italic;
+  color: var(--acento);
+}
+
+.entradilla {
+  font-size: clamp(1rem, 0.94rem + 0.45vw, 1.28rem);
+  line-height: 1.58;
+  color: var(--marfil-70);
+  max-width: 46ch;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.nota {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: var(--marfil-45);
+  margin: 0;
+}
+
+.cifra {
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 1.5rem + 4vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Revelados
+   -------------------------------------------------------------------------- */
+
+[data-reveal] {
+  --retardo: 0ms;
+}
+
+[data-reveal] > .linea,
+[data-reveal].linea {
+  display: block;
+  overflow: hidden;
+  /* Deja aire por arriba para las tildes y diéresis: con `overflow: hidden`
+     y una interlínea apretada, la Ó de VÓRTICE se decapitaba. */
+  padding-top: 0.16em;
+  margin-top: -0.16em;
+}
+
+[data-reveal] .linea__interior {
+  display: block;
+  transform: translateY(112%);
+  opacity: 0;
+  transition:
+    transform var(--lento) var(--curva),
+    opacity var(--medio) ease-out;
+  transition-delay: var(--retardo);
+}
+
+[data-reveal].esta-visible .linea__interior {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+[data-reveal] .aparece {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    transform var(--medio) var(--curva),
+    opacity var(--medio) ease-out;
+  transition-delay: var(--retardo);
+}
+
+[data-reveal].esta-visible .aparece {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* La escala coordinada: el filete crece con el texto */
+[data-reveal] .filete {
+  display: block;
+  height: 1px;
+  background: var(--marfil-22);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--lento) var(--curva);
+  transition-delay: var(--retardo);
+}
+
+[data-reveal].esta-visible .filete {
+  transform: scaleX(1);
+}
+
+/* --------------------------------------------------------------------------
+   Botones y microinteracciones
+   -------------------------------------------------------------------------- */
+
+.boton {
+  --fondo: transparent;
+  --borde: var(--marfil-22);
+  --texto: var(--marfil);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.95em 1.6em;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color var(--micro) ease,
+    border-color var(--micro) ease,
+    transform var(--micro) var(--curva);
+}
+
+.boton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--acento);
+  transform: translateY(101%);
+  transition: transform 420ms var(--curva);
+}
+
+.boton:hover,
+.boton:focus-visible {
+  color: var(--noir);
+  border-color: var(--acento);
+}
+
+.boton:hover::after,
+.boton:focus-visible::after {
+  transform: translateY(0);
+}
+
+.boton:active {
+  transform: scale(0.975);
+}
+
+.boton__punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acento);
+  flex: none;
+  transition: background var(--micro) ease, transform var(--micro) var(--curva);
+}
+
+.boton:hover .boton__punto,
+.boton:focus-visible .boton__punto {
+  background: var(--noir);
+  transform: scale(1.6);
+}
+
+.boton--solido {
+  --fondo: var(--marfil);
+  --borde: var(--marfil);
+  --texto: var(--noir);
+}
+
+.boton--fantasma {
+  padding-inline: 1.25em;
+}
+
+/* Enlace con subrayado que se dibuja */
+.enlace {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  padding-bottom: 2px;
+}
+
+.enlace::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 380ms var(--curva);
+}
+
+.enlace:hover::after,
+.enlace:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* --------------------------------------------------------------------------
+   Navegación
+   -------------------------------------------------------------------------- */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gutter);
+  padding: clamp(0.9rem, 2vw, 1.6rem) var(--margen);
+  mix-blend-mode: difference;
+  opacity: 0;
+  transform: translateY(-14px);
+  animation: nav-entrar 900ms var(--curva) 1.5s forwards;
+}
+
+@keyframes nav-entrar {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav__marca {
+  font-family: var(--display);
+  font-size: clamp(1.05rem, 1rem + 0.5vw, 1.45rem);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-decoration: none;
+  color: var(--marfil);
+  line-height: 1;
+}
+
+.nav__lista {
+  display: flex;
+  gap: clamp(0.9rem, 2vw, 2rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav__lista a {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--marfil-45);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--micro) ease;
+}
+
+.nav__lista a::before {
+  content: '';
+  position: absolute;
+  left: -0.7em;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--acento);
+  transform: translateY(-50%) scale(0);
+  transition: transform var(--micro) var(--curva);
+}
+
+.nav__lista a:hover,
+.nav__lista a[aria-current='true'] {
+  color: var(--marfil);
+}
+
+.nav__lista a[aria-current='true']::before {
+  transform: translateY(-50%) scale(1);
+}
+
+@media (max-width: 720px) {
+  .nav__lista {
+    display: none;
+  }
+}
+
+/* Barra de avance */
+.avance {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 61;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(var(--avance));
+  background: linear-gradient(90deg, var(--acento), var(--acento-suave));
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Controles flotantes
+   -------------------------------------------------------------------------- */
+
+.controles {
+  position: fixed;
+  right: var(--margen);
+  bottom: clamp(1rem, 2.5vw, 1.9rem);
+  z-index: 62;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.62em 0.95em;
+  border: 1px solid var(--marfil-22);
+  border-radius: 999px;
+  background: rgba(10, 10, 11, 0.72);
+  backdrop-filter: blur(10px);
+  color: var(--marfil-70);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--micro) ease,
+    border-color var(--micro) ease,
+    transform var(--micro) var(--curva);
+}
+
+.control:hover,
+.control:focus-visible {
+  color: var(--marfil);
+  border-color: var(--acento);
+}
+
+.control:active {
+  transform: scale(0.96);
+}
+
+/* Con movimiento reducido el control es informativo, no accionable. */
+.control--nota {
+  margin: 0;
+  cursor: default;
+  line-height: 1.4;
+  max-width: 16rem;
+}
+
+.control--nota:hover {
+  color: var(--marfil-70);
+  border-color: var(--marfil-22);
+}
+
+.control__icono {
+  display: inline-flex;
+  width: 9px;
+  height: 10px;
+  gap: 2px;
+  flex: none;
+}
+
+.control__icono i {
+  display: block;
+  width: 3px;
+  background: var(--acento);
+  border-radius: 1px;
+}
+
+.control[data-estado='pausado'] .control__icono {
+  position: relative;
+}
+
+.control[data-estado='pausado'] .control__icono i:last-child {
+  display: none;
+}
+
+.control[data-estado='pausado'] .control__icono i:first-child {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-left: 8px solid var(--acento);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Puntero decorativo (sólo escritorio, nunca sustituye al del sistema)
+   -------------------------------------------------------------------------- */
+
+.puntero {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid var(--acento);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease, width 260ms var(--curva), height 260ms var(--curva), margin 260ms var(--curva);
+  will-change: transform;
+}
+
+.puntero[data-activo='si'] {
+  opacity: 0.55;
+}
+
+.puntero[data-sobre='si'] {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  opacity: 0.9;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .puntero {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --hueco-control: 3.4rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .control {
+    padding: 0.7em;
+  }
+
+  .control__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   1 · Entrada
+   -------------------------------------------------------------------------- */
+
+.entrada {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-block: clamp(6rem, 14vh, 10rem) clamp(4rem, 10vh, 8rem);
+}
+
+.entrada .rejilla {
+  width: 100%;
+}
+
+.entrada__texto {
+  grid-column: 1 / span 6;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.1rem, 2.4vw, 2rem);
+}
+
+.entrada__pie {
+  grid-column: 1 / span 7;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2.5rem;
+}
+
+.entrada__meta {
+  text-align: right;
+}
+
+.marca-grande {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 1rem + 7.6vw, 7.6rem);
+  line-height: 0.88;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.entrada__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .entrada__texto,
+  .entrada__pie {
+    grid-column: 1 / -1;
+  }
+  .entrada__meta {
+    text-align: left;
+  }
+  .entrada {
+    padding-block: 50vh calc(clamp(2.5rem, 7vh, 4.5rem) + var(--hueco-control));
+    align-items: flex-end;
+  }
+}
+
+/* Indicador de desplazamiento */
+.desliza {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--marfil-45);
+}
+
+.desliza__linea {
+  display: block;
+  width: 54px;
+  height: 1px;
+  background: var(--marfil-22);
+  position: relative;
+  overflow: hidden;
+}
+
+.desliza__linea::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--acento);
+  transform-origin: left;
+  animation: desliza 2.4s var(--curva-fuerte) infinite;
+}
+
+@keyframes desliza {
+  0% { transform: translateX(-100%); }
+  55% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+/* --------------------------------------------------------------------------
+   2 · Producto interactivo
+   -------------------------------------------------------------------------- */
+
+.producto {
+  min-height: 145svh;
+}
+
+.producto__texto {
+  grid-column: 1 / span 4;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Capa de arrastre: cubre el lado del producto y deja pasar el scroll vertical */
+.manipulador {
+  grid-column: 6 / -1;
+  align-self: stretch;
+  min-height: 60svh;
+  border-radius: 24px;
+  border: 1px dashed transparent;
+  cursor: grab;
+  touch-action: pan-y;
+  transition: border-color var(--micro) ease, background var(--micro) ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1.2rem;
+}
+
+.manipulador:hover,
+.manipulador:focus-visible {
+  border-color: var(--marfil-10);
+  background: rgba(242, 237, 228, 0.02);
+}
+
+.manipulador[data-arrastrando='si'] {
+  cursor: grabbing;
+  border-color: var(--acento);
+}
+
+.manipulador__pista {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--marfil-45);
+  background: rgba(10, 10, 11, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  border: 1px solid var(--marfil-10);
+  transition: opacity var(--micro) ease;
+  text-align: center;
+}
+
+.producto__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.producto__ficha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1.6rem;
+  margin: 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--marfil-10);
+}
+
+.producto__ficha dt {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--marfil-45);
+}
+
+.producto__ficha dd {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  color: var(--marfil);
+}
+
+@media (max-width: 900px) {
+  .producto__texto {
+    grid-column: 1 / -1;
+    order: 2;
+  }
+  .manipulador {
+    grid-column: 1 / -1;
+    order: 1;
+    /* Cubre la franja del lienzo, que es donde está el producto. */
+    position: absolute;
+    inset: 0 0 52% 0;
+    margin-inline: calc(var(--margen) * -1);
+    min-height: 0;
+    align-items: flex-end;
+    padding-bottom: 1.2rem;
+  }
+
+  .producto .fijo {
+    position: sticky;
+  }
+
+  .producto .rejilla {
+    position: relative;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3 · Historia al hacer scroll
+   -------------------------------------------------------------------------- */
+
+.relato {
+  position: relative;
+}
+
+.relato__pasos {
+  position: relative;
+}
+
+.paso {
+  min-height: 125svh;
+}
+
+.paso__caja {
+  max-width: 38ch;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.paso--izq .paso__caja {
+  margin-right: auto;
+}
+
+.paso--der .paso__caja {
+  margin-left: auto;
+  text-align: right;
+}
+
+.paso--der .etiqueta {
+  flex-direction: row-reverse;
+}
+
+.paso--der .entradilla {
+  margin-left: auto;
+}
+
+.paso--centro .paso__caja {
+  margin-inline: auto;
+  text-align: center;
+  align-items: center;
+}
+
+.paso--centro .entradilla {
+  text-align: center;
+}
+
+/* Listado de piezas: acompaña a las etiquetas 3D y las sustituye en móvil */
+/* En escritorio las etiquetas viven en la escena 3D: el listado queda como
+   contenido accesible, no visible. Por debajo de 1100 px el listado toma el
+   relevo porque no hay sitio para rótulos flotantes. */
+@media (min-width: 1101px) {
+  .piezas {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+.piezas {
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+  max-width: 34ch;
+  text-align: left;
+}
+
+.piezas li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: baseline;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--marfil-10);
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--medio) ease-out,
+    transform var(--medio) var(--curva);
+}
+
+.esta-visible .piezas li {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.piezas li:nth-child(1) { transition-delay: 60ms; }
+.piezas li:nth-child(2) { transition-delay: 130ms; }
+.piezas li:nth-child(3) { transition-delay: 200ms; }
+.piezas li:nth-child(4) { transition-delay: 270ms; }
+.piezas li:nth-child(5) { transition-delay: 340ms; }
+.piezas li:nth-child(6) { transition-delay: 410ms; }
+
+.piezas b {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--acento);
+}
+
+.piezas strong {
+  display: block;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.98rem;
+}
+
+.piezas span {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--marfil-45);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .paso--der .paso__caja {
+    margin-left: 0;
+    text-align: left;
+  }
+  .paso--der .etiqueta {
+    flex-direction: row;
+  }
+  .paso--der .entradilla {
+    margin-left: 0;
+  }
+  .paso--centro .paso__caja {
+    text-align: left;
+    align-items: flex-start;
+  }
+  .paso--centro .entradilla {
+    text-align: left;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4 · Sonido convertido en imagen
+   -------------------------------------------------------------------------- */
+
+.sonido {
+  min-height: 190svh;
+  padding-block: 8vh;
+}
+
+.sonido__fijo {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-block: clamp(5rem, 12vh, 8rem)
+    calc(clamp(3rem, 8vh, 6rem) + var(--hueco-control));
+}
+
+.sonido__cabecera {
+  max-width: 44ch;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sonido__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.4rem;
+}
+
+.sonido__leyenda {
+  max-width: 34ch;
+}
+
+/* --------------------------------------------------------------------------
+   5 · Acabados
+   -------------------------------------------------------------------------- */
+
+.acabados {
+  min-height: 145svh;
+}
+
+.acabados__texto {
+  grid-column: 8 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.acabados__nombre {
+  font-family: var(--display);
+  font-size: clamp(2rem, 1.2rem + 3.4vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+  min-height: 1em;
+}
+
+.acabados__nombre span {
+  display: inline-block;
+  animation: nombre-entra 620ms var(--curva) both;
+}
+
+@keyframes nombre-entra {
+  from {
+    opacity: 0;
+    transform: translateY(0.42em) rotate(1.4deg);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+    filter: blur(0);
+  }
+}
+
+.acabados__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.muestra {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.6em 1.15em 0.6em 0.6em;
+  border: 1px solid var(--marfil-22);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--marfil-45);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--micro) ease,
+    border-color var(--micro) ease,
+    background var(--micro) ease,
+    transform var(--micro) var(--curva);
+}
+
+.muestra:hover {
+  color: var(--marfil);
+  border-color: var(--marfil-45);
+}
+
+.muestra:active {
+  transform: scale(0.97);
+}
+
+.muestra__disco {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  transition: transform var(--medio) var(--curva);
+}
+
+.muestra:hover .muestra__disco {
+  transform: scale(1.08) rotate(28deg);
+}
+
+.muestra[aria-pressed='true'] {
+  color: var(--noir);
+  background: var(--marfil);
+  border-color: var(--marfil);
+}
+
+.muestra[aria-pressed='true'] .muestra__disco {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 0 0 3px var(--noir),
+    0 0 0 4px var(--acento);
+}
+
+.acabados__detalle {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--marfil-10);
+  min-height: 5.5rem;
+}
+
+@media (max-width: 900px) {
+  .acabados__texto {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6 · Detalles
+   -------------------------------------------------------------------------- */
+
+.detalles {
+  position: relative;
+}
+
+.detalle {
+  min-height: 130svh;
+}
+
+.detalle__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.detalle--uno .detalle__texto {
+  grid-column: 1 / span 5;
+}
+
+.detalle--dos .detalle__texto {
+  grid-column: 7 / -1;
+}
+
+.detalle__cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--marfil-10);
+}
+
+.detalle__cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+@media (max-width: 900px) {
+  .detalle--uno .detalle__texto,
+  .detalle--dos .detalle__texto {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7 · Cierre
+   -------------------------------------------------------------------------- */
+
+.cierre {
+  min-height: 145svh;
+  padding-block: 6vh;
+}
+
+.cierre__fijo {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: clamp(1.1rem, 2.4vw, 1.9rem);
+  text-align: center;
+  padding-block: clamp(5.5rem, 13vh, 9rem) clamp(3rem, 8vh, 6rem);
+}
+
+/* El velo del cierre acompaña al texto, que vive en la mitad superior. */
+.cierre__fijo .velo--centro {
+  background: radial-gradient(
+    88% 46% at 50% 30%,
+    rgba(10, 10, 11, 0.93) 0%,
+    rgba(10, 10, 11, 0.74) 48%,
+    rgba(10, 10, 11, 0) 84%
+  );
+}
+
+.cierre .titular {
+  max-width: 16ch;
+}
+
+.cierre__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .cierre__fijo {
+    justify-content: flex-end;
+    padding-bottom: calc(8vh + var(--hueco-control));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Pie
+   -------------------------------------------------------------------------- */
+
+.pie {
+  position: relative;
+  z-index: 3;
+  background: var(--noir);
+  border-top: 1px solid var(--marfil-10);
+  padding: clamp(2.5rem, 6vw, 4.5rem) var(--margen) clamp(2rem, 4vw, 3rem);
+}
+
+.pie__interior {
+  max-width: 1560px;
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem 3rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pie__aviso {
+  max-width: 52ch;
+  font-size: 0.84rem;
+  color: var(--marfil-45);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Alternativa sin WebGL
+   -------------------------------------------------------------------------- */
+
+.sin-webgl {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(90% 70% at 50% 40%, rgba(255, 255, 255, 0.05), transparent 65%);
+}
+
+.sin-webgl svg {
+  width: min(52vw, 460px);
+  height: auto;
+  opacity: 0.9;
+  filter: drop-shadow(0 26px 60px rgba(0, 0, 0, 0.7));
+}
+
+.sin-webgl__aviso {
+  position: fixed;
+  left: var(--margen);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 63;
+  max-width: 34ch;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--marfil-10);
+  border-radius: 12px;
+  background: rgba(10, 10, 11, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+/* --------------------------------------------------------------------------
+   Movimiento reducido o pausado
+   -------------------------------------------------------------------------- */
+
+:root[data-movimiento='quieto'] .grano {
+  animation: none;
+}
+
+:root[data-movimiento='quieto'] .desliza__linea::after {
+  animation: none;
+  transform: translateX(0);
+}
+
+:root[data-movimiento='quieto'] .acabados__nombre span {
+  animation: none;
+}
+
+:root[data-reducido='si'] .nav {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+:root[data-reducido='si'] [data-reveal] .linea__interior,
+:root[data-reducido='si'] [data-reveal] .aparece {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+:root[data-reducido='si'] [data-reveal] .filete {
+  transform: scaleX(1) !important;
+  transition: none !important;
+}
+
+:root[data-reducido='si'] .piezas li {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+:root[data-reducido='si'] .puntero {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Pantallas estrechas en vertical
+   Va al final a propósito: estas reglas tienen que ganar a las de las
+   secciones, que se declaran más arriba con la misma especificidad.
+   -------------------------------------------------------------------------- */
+
+/*
+ * El lienzo deja de ser a sangre completa: ocupa la franja superior y el
+ * texto vive debajo, sobre fondo limpio. Un producto grande y legible arriba
+ * funciona mucho mejor en un teléfono que uno pequeño detrás del texto.
+ */
+@media (max-width: 900px) and (orientation: portrait) {
+  .lienzo,
+  .sin-webgl {
+    bottom: 52%;
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  }
+
+  .vineta {
+    background: radial-gradient(
+      130% 42% at 50% 22%,
+      transparent 42%,
+      rgba(5, 5, 6, 0.5) 84%,
+      rgba(5, 5, 6, 0.85) 100%
+    );
+  }
+
+  /* El texto ya no se superpone al producto: el velo sobra. */
+  .velo {
+    display: none;
+  }
+
+  /*
+   * El listado de piezas releva a las etiquetas flotantes en pantallas
+   * estrechas y es demasiado alto para caber en la mitad inferior, así que
+   * aquí no se fija: arranca bajo la franja del producto y se desplaza con
+   * la página.
+   */
+  .paso--centro .fijo {
+    position: static;
+    min-height: 0;
+    align-items: flex-start;
+    padding-top: 52vh;
+    padding-bottom: calc(1.5rem + var(--hueco-control));
+  }
+
+  .piezas {
+    max-width: none;
+  }
+
+  /* El texto de la escena de sonido arranca bajo la franja del producto. */
+  .sonido__fijo {
+    justify-content: flex-start;
+    gap: clamp(1.4rem, 4vh, 2.6rem);
+    padding-top: 52vh;
+  }
+
+  .sonido__pie {
+    margin-top: auto;
+  }
+}
