@@ -1,15 +1,12 @@
-# codecraft-design-lab
+# VÓRTICE
 
-Pruebas de diseño web y plantillas para CodeCraft.
+Página de lanzamiento en 3D. Demostración de diseño de **CodeCraft**.
 
----
-
-## VÓRTICE — landing de lanzamiento
-
-Demostración de diseño: una página de lanzamiento para **VÓRTICE**, una marca
-**ficticia** de auriculares de alta gama, construida como pieza inmersiva de una
-sola toma. El producto es un modelo 3D procedural que acompaña al visitante de
-principio a fin, cambiando de composición entre escenas.
+Una landing para **VÓRTICE**, una marca **ficticia** de auriculares de alta
+gama, construida como pieza inmersiva de una sola toma. El producto es un
+modelo 3D procedural que acompaña al visitante de principio a fin, cambiando de
+composición entre escenas: entra, se deja girar, se despieza sobre el relato,
+se convierte en onda, cambia de acabado y se despide.
 
 > VÓRTICE no existe. El producto, los acabados y las características son
 > inventados para esta demostración de diseño de CodeCraft. No hay tienda, ni
